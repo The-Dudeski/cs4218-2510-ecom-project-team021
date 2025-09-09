@@ -9,6 +9,7 @@ import Login from './Login';
 // Mocking axios.post
 jest.mock('axios');
 jest.mock('react-hot-toast');
+jest.mock('../../hooks/useCategory', () => () => []);
 
 jest.mock('../../context/auth', () => ({
     useAuth: jest.fn(() => [null, jest.fn()]) // Mock useAuth hook to return null state and a mock function for setAuth
@@ -42,7 +43,17 @@ window.matchMedia = window.matchMedia || function() {
 describe('Login Component', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        axios.get = jest.fn().mockResolvedValue({
+          data: {
+            success: true,
+            message: 'All Categories List',
+            category: [],
+          },
+        });
+        axios.post = axios.post || jest.fn(); // keep your post mocks per test
     });
+
+    
 
     it('renders login form', () => {
         const { getByText, getByPlaceholderText } = render(

@@ -9,6 +9,7 @@ import Register from './Register';
 // Mocking axios.post
 jest.mock('axios');
 jest.mock('react-hot-toast');
+jest.mock('../../hooks/useCategory', () => () => []);
 
 jest.mock('../../context/auth', () => ({
     useAuth: jest.fn(() => [null, jest.fn()]) // Mock useAuth hook to return null state and a mock function for setAuth
@@ -43,6 +44,10 @@ window.matchMedia = window.matchMedia || function() {
 describe('Register Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Provide default axios.get to satisfy Header/useCategory
+    axios.get = jest.fn().mockResolvedValue({
+      data: { success: true, message: 'All Categories List', category: [] },
+    });
   });
 
   it('should register the user successfully', async () => {
