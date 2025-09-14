@@ -9,6 +9,7 @@ const mockSave = jest.fn();
 jest.mock('../models/categoryModel.js', () => {
   const findOneMock = jest.fn();
   const findByIdAndUpdateMock = jest.fn();
+  const findByIdAndDeleteMock = jest.fn();
 
   // Constructor mock that provides an instance save() method
   const ModelMock = function ModelMock(document) {
@@ -20,12 +21,13 @@ jest.mock('../models/categoryModel.js', () => {
   // Static methods used by controller
   ModelMock.findOne = findOneMock;
   ModelMock.findByIdAndUpdate = findByIdAndUpdateMock;
+  ModelMock.findByIdAndDelete = findByIdAndDeleteMock;
 
-  return { __esModule: true, default: ModelMock, findOneMock, findByIdAndUpdateMock };
+  return { __esModule: true, default: ModelMock, findOneMock, findByIdAndUpdateMock, findByIdAndDeleteMock };
 });
 
-import { createCategoryController, updateCategoryController } from './categoryController.js';
-import categoryModel, { findOneMock as mockFindOne, findByIdAndUpdateMock as mockFindByIdAndUpdate } from '../models/categoryModel.js';
+import { createCategoryController, updateCategoryController, deleteCategoryController } from './categoryController.js';
+import categoryModel, { findOneMock as mockFindOne, findByIdAndUpdateMock as mockFindByIdAndUpdate, findByIdAndDeleteMock as mockFindByIdAndDelete } from '../models/categoryModel.js';
 
 // Helpers to create mock req/res
 const createMockReqRes = (body = {}) => {
@@ -149,4 +151,41 @@ describe('updateCategoryController', () => {
   });
 });
 
+describe('deleteCategoryController', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
+  it('deletes a category and returns 200', async () => {
+    const { req, res } = createMockReqRes();
+    req.params = { id: 'abc123' };
+
+    mockFindByIdAndDelete.mockResolvedValueOnce({ _id: 'abc123', name: 'DeletedCategory' });
+
+    await deleteCategoryController(req, res);
+
+    expect(mockFindByIdAndDelete).toHaveBeenCalledWith('abc123');
+    expect(res.statusCode).toBe(200);
+    expect(res.sent).toEqual({
+      success: true,
+      message: 'Category Deleted Successfully',
+    });
+  });
+
+  it('handles errors and returns 500', async () => {
+    const { req, res } = createMockReqRes();
+    req.params = { id: 'abc123' };
+
+    const err = new Error('DB failure');
+    mockFindByIdAndDelete.mockRejectedValueOnce(err);
+
+    await deleteCategoryController(req, res);
+
+    expect(res.statusCode).toBe(500);
+    expect(res.sent).toEqual({
+      success: false,
+      message: 'Error while deleting category',
+      error: err,
+    });
+  });
+});
