@@ -23,11 +23,11 @@ export const createCategoryController = async (req, res) => {
       category,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error.message);
     res.status(500).send({
       success: false,
-      errro,
-      message: "Errro in Category",
+      error,
+      message: "Error in Category",
     });
   }
 };
@@ -48,7 +48,7 @@ export const updateCategoryController = async (req, res) => {
       category,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error.message);
     res.status(500).send({
       success: false,
       error,
@@ -67,7 +67,7 @@ export const categoryControlller = async (req, res) => {
       category,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error.message);
     res.status(500).send({
       success: false,
       error,
@@ -86,7 +86,7 @@ export const singleCategoryController = async (req, res) => {
       category,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error.message);
     res.status(500).send({
       success: false,
       error,
@@ -102,13 +102,13 @@ export const deleteCategoryController = async (req, res) => {
     await categoryModel.findByIdAndDelete(id);
     res.status(200).send({
       success: true,
-      message: "Categry Deleted Successfully",
+      message: "Category Deleted Successfully",
     });
   } catch (error) {
-    console.log(error);
+    console.error(error.message);
     res.status(500).send({
       success: false,
-      message: "error while deleting category",
+      message: "Error while deleting category",
       error,
     });
   }

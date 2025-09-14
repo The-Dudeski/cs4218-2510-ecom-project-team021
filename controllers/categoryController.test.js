@@ -8,6 +8,7 @@ const mockSave = jest.fn();
 
 jest.mock('../models/categoryModel.js', () => {
   const findOneMock = jest.fn();
+  const findByIdAndUpdateMock = jest.fn();
 
   // Constructor mock that provides an instance save() method
   const ModelMock = function ModelMock(document) {
@@ -18,12 +19,13 @@ jest.mock('../models/categoryModel.js', () => {
 
   // Static methods used by controller
   ModelMock.findOne = findOneMock;
+  ModelMock.findByIdAndUpdate = findByIdAndUpdateMock;
 
-  return { __esModule: true, default: ModelMock, findOneMock };
+  return { __esModule: true, default: ModelMock, findOneMock, findByIdAndUpdateMock };
 });
 
-import { createCategoryController } from './categoryController.js';
-import categoryModel, { findOneMock as mockFindOne } from '../models/categoryModel.js';
+import { createCategoryController, updateCategoryController } from './categoryController.js';
+import categoryModel, { findOneMock as mockFindOne, findByIdAndUpdateMock as mockFindByIdAndUpdate } from '../models/categoryModel.js';
 
 // Helpers to create mock req/res
 const createMockReqRes = (body = {}) => {
@@ -89,6 +91,60 @@ describe('createCategoryController', () => {
       success: true,
       message: 'new category created',
       category: { _id: 'mock-id', name: 'Books', slug: 'slug-Books' },
+    });
+  });
+});
+
+describe('updateCategoryController', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('updates a category and returns 200', async () => {
+    const { req, res } = createMockReqRes(
+      // params
+      undefined,
+      // body will be ignored; we need params and body both
+    );
+
+    // craft proper req with params and body
+    req.params = { id: 'abc123' };
+    req.body = { name: 'NewName' };
+
+    const updatedDoc = { _id: 'abc123', name: 'NewName', slug: 'slug-NewName' };
+    mockFindByIdAndUpdate.mockResolvedValueOnce(updatedDoc);
+
+    await updateCategoryController(req, res);
+
+    expect(mockFindByIdAndUpdate).toHaveBeenCalledWith(
+      'abc123',
+      { name: 'NewName', slug: 'slug-NewName' },
+      { new: true }
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(res.sent).toEqual({
+      success: true,
+      messsage: 'Category Updated Successfully',
+      category: updatedDoc,
+    });
+  });
+
+  it('handles errors and returns 500', async () => {
+    const { req, res } = createMockReqRes();
+    req.params = { id: 'abc123' };
+    req.body = { name: 'Broken' };
+
+    const err = new Error('DB failure');
+    mockFindByIdAndUpdate.mockRejectedValueOnce(err);
+
+    await updateCategoryController(req, res);
+
+    expect(res.statusCode).toBe(500);
+    expect(res.sent).toEqual({
+      success: false,
+      error: err,
+      message: 'Error while updating category',
     });
   });
 });
