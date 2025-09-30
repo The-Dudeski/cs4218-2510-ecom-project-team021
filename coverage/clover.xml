@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1759212975784" clover="3.2.0">
-  <project timestamp="1759212975784" name="All files">
-    <metrics statements="268" coveredstatements="8" conditionals="80" coveredconditionals="0" methods="32" coveredmethods="2" elements="380" coveredelements="10" complexity="0" loc="268" ncloc="268" packages="2" files="4" classes="4"/>
+<coverage generated="1759214289835" clover="3.2.0">
+  <project timestamp="1759214289835" name="All files">
+    <metrics statements="274" coveredstatements="14" conditionals="82" coveredconditionals="2" methods="32" coveredmethods="2" elements="388" coveredelements="18" complexity="0" loc="274" ncloc="274" packages="2" files="4" classes="4"/>
     <package name="controllers">
       <metrics statements="260" coveredstatements="0" conditionals="80" coveredconditionals="0" methods="30" coveredmethods="0"/>
       <file name="authController.js" path="/Users/juyeon.jung.22/Desktop/CS4218/cs4218-2510-ecom-project-team021/controllers/authController.js">
@@ -274,18 +274,24 @@
         <line num="375" count="0" type="stmt"/>
       </file>
     </package>
-    <package name="helpers">
-      <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
-      <file name="authHelper.js" path="/Users/juyeon.jung.22/Desktop/CS4218/cs4218-2510-ecom-project-team021/helpers/authHelper.js">
-        <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
-        <line num="3" count="1" type="stmt"/>
-        <line num="4" count="6" type="stmt"/>
-        <line num="5" count="6" type="stmt"/>
-        <line num="6" count="6" type="stmt"/>
-        <line num="7" count="5" type="stmt"/>
-        <line num="10" count="1" type="stmt"/>
+    <package name="middlewares">
+      <metrics statements="14" coveredstatements="14" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
+      <file name="authMiddleware.js" path="/Users/juyeon.jung.22/Desktop/CS4218/cs4218-2510-ecom-project-team021/middlewares/authMiddleware.js">
+        <metrics statements="14" coveredstatements="14" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="2" type="stmt"/>
+        <line num="7" count="2" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
         <line num="14" count="1" type="stmt"/>
-        <line num="15" count="3" type="stmt"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="20" count="3" type="stmt"/>
+        <line num="21" count="3" type="stmt"/>
+        <line num="22" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="28" count="1" type="stmt"/>
+        <line num="31" count="1" type="stmt"/>
+        <line num="32" count="1" type="stmt"/>
       </file>
     </package>
   </project>
