@@ -1,4 +1,3 @@
-
 import { jest } from '@jest/globals';
 
 const mockSale = jest.fn();
@@ -6,18 +5,31 @@ const mockSave = jest.fn();
 const mockGenerate = jest.fn();
 const mockProductSave = jest.fn();
 const mockProductModel = jest.fn();
+const mockFindByIdAndDelete = jest.fn();
+const mockSelect = jest.fn();
 
 // Mock fs early
 jest.unstable_mockModule("fs", () => ({
   readFileSync: jest.fn().mockReturnValue(Buffer.from("fake-photo")),
 }));
 
+const fsMock = {
+    readFileSync: jest.fn().mockReturnValue(Buffer.from("fake-photo")),
+  };
+  
+  jest.unstable_mockModule("fs", () => fsMock);
+
 // Mock productModel
 jest.unstable_mockModule("../models/productModel.js", () => ({
-  default: jest.fn().mockImplementation((data) => {
-    mockProductModel(data);
-    return { save: mockProductSave, photo: {} };
-  }),
+  default: Object.assign(
+    jest.fn().mockImplementation((data) => {
+      mockProductModel(data);
+      return { save: mockProductSave, photo: {} };
+    }),
+    {
+      findByIdAndDelete: mockFindByIdAndDelete,
+    }
+  ),
 }));
 
 // Mock orderModel
@@ -39,7 +51,12 @@ jest.unstable_mockModule("braintree", () => ({
 }));
 
 // Import controllers AFTER mocks
-const { braintreeTokenController, brainTreePaymentController } = await import("./productController.js");
+const {
+  braintreeTokenController,
+  brainTreePaymentController,
+  createProductController,
+  deleteProductController,
+} = await import("./productController.js");
 
 // braintreeTokenController
 describe('braintreeTokenController', () => {
@@ -59,8 +76,6 @@ describe('braintreeTokenController', () => {
   });
 
   it('handles error from gateway', async () => {
-    jest.resetModules();
-
     jest.unstable_mockModule('braintree', () => ({
       default: {
         BraintreeGateway: jest.fn().mockImplementation(() => ({
@@ -72,20 +87,22 @@ describe('braintreeTokenController', () => {
         Environment: { Sandbox: 'sandbox' },
       },
     }));
-
-    const { braintreeTokenController: errorController } = await import('./productController.js');
-
+  
+    jest.resetModules();
+    const { braintreeTokenController: errorController } = await import(`./productController.js?${Date.now()}`);
+  
     const req = {};
     const res = {
       send: jest.fn(),
       status: jest.fn().mockReturnThis(),
     };
-
+  
     await errorController(req, res);
-
+  
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith(expect.any(Error));
   });
+  
 });
 
 // brainTreePaymentController
@@ -152,12 +169,6 @@ describe("brainTreePaymentController", () => {
 
 // createProductController
 describe("createProductController", () => {
-  let createProductController;
-
-  beforeAll(async () => {
-    ({ createProductController } = await import("./productController.js"));
-  });
-
   let req;
   let res;
 
@@ -205,19 +216,83 @@ describe("createProductController", () => {
   });
 
   it("saves product with photo", async () => {
-    req.files.photo = { path: "/fake/path", size: 500, type: "image/png" };
-
-    const { readFileSync } = await import("fs");
-    await createProductController(req, res);
-
-    expect(readFileSync).toHaveBeenCalledWith("/fake/path");
+    const reqWithPhoto = {
+      fields: {
+        name: "Test Product",
+        description: "Desc",
+        price: 100,
+        category: "cat123",
+        quantity: 5,
+        shipping: true,
+      },
+      files: {
+        photo: {
+          path: "/fake/path",
+          size: 500,
+          type: "image/png",
+        },
+      },
+    };
+  
+    await createProductController(reqWithPhoto, res);
+  
+    expect(fsMock.readFileSync).toHaveBeenCalledWith("/fake/path");
     expect(mockProductSave).toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(201);
   });
+  
 
-  it("handles save error gracefully", async () => {
+  it("handles save error", async () => {
     mockProductSave.mockRejectedValueOnce(new Error("DB error"));
     await createProductController(req, res);
     expect(res.status).toHaveBeenCalledWith(500);
+  });
+});
+
+// deleteProductController
+describe("deleteProductController", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("deletes product by ID and returns success response", async () => {
+    const req = { params: { pid: "123" } };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+
+    mockFindByIdAndDelete.mockReturnValue({ select: jest.fn().mockResolvedValue({}) });
+
+    await deleteProductController(req, res);
+
+    expect(mockFindByIdAndDelete).toHaveBeenCalledWith("123");
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith({
+      success: true,
+      message: "Product Deleted successfully",
+    });
+  });
+
+  it("handles errors", async () => {
+    const req = { params: { pid: "999" } };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+
+    const fakeError = new Error("Delete failed");
+    mockFindByIdAndDelete.mockImplementation(() => {
+      throw fakeError;
+    });
+
+    await deleteProductController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith({
+      success: false,
+      message: "Error while deleting product",
+      error: fakeError,
+    });
   });
 });
