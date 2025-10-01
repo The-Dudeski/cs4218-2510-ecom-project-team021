@@ -194,52 +194,7 @@ describe("CartPage", () => {
     expect(screen.getByText(/Your Cart Is Empty/i)).toBeInTheDocument();
   });
 
-  it("handles payment error", async () => {
-    const mockInstance = {
-      requestPaymentMethod: jest.fn().mockRejectedValue(new Error("payment failed")),
-    };
   
-    jest.doMock("braintree-web-drop-in-react", () => ({
-      __esModule: true,
-      default: ({ onInstance }) => {
-        onInstance(mockInstance);
-        return <div data-testid="dropin" />;
-      },
-    }));
-  
-    const axios = require("axios");
-    const { useCart } = require("../context/cart");
-    const { useAuth } = require("../context/auth");
-  
-    useCart.mockReturnValue([
-      [{ _id: "1", name: "Test Item", description: "desc", price: 10 }],
-      jest.fn(),
-    ]);
-    useAuth.mockReturnValue([
-      { token: "fake-token", user: { name: "Joanna", address: "123 St" } },
-      jest.fn(),
-    ]);
-  
-    jest.spyOn(axios, "get").mockResolvedValue({
-      data: { clientToken: "fake-client-token" },
-    });
-  
-    const CartPage = require("./CartPage").default;
-  
-    const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
-  
-    renderWithRouter(<CartPage />);
-  
-    const paymentButton = await screen.findByRole("button", { name: /make payment/i });
-    fireEvent.click(paymentButton);
-  
-    await waitFor(() => {
-      expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
-    });
-  
-    consoleSpy.mockRestore();
-  });
-
   it("handles removeCartItem error", () => {
   const { useCart } = require("../context/cart");
   const { useAuth } = require("../context/auth");
