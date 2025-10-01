@@ -1,4 +1,4 @@
-import { registerController, loginController, forgotPasswordController } from "./authController.js"
+import { registerController, loginController, forgotPasswordController, testController } from "./authController.js"
 import userModel from "../models/userModel.js";
 import { hashPassword, comparePassword } from "../helpers/authHelper.js";
 import JWT from "jsonwebtoken";
@@ -528,6 +528,44 @@ describe("forgotPasswordController", () => {
       message: "Password Reset Successfully",
     });
   });
+});
+
+describe("testController", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("protected routes returned successfully", async () => {
+    // Arrange
+    const req = {};
+    const res = mockResponse();
+
+    // Act
+    testController(req, res);
+
+    // Assert
+    expect(res.send).toHaveBeenCalledWith("Protected Routes");
+  })
+
+  it("exception caught in catch block", async () => {
+    // Arrange
+    const req = {};
+    const res = {
+      send: jest.fn()
+    };
+
+    res.send.mockImplementationOnce(() => { throw new Error("error") }).mockImplementationOnce(() => {});
+
+    // Act
+    testController(req, res);
+
+    // Assert
+    expect(res.send).toHaveBeenCalledWith({
+      error: new Error("error"),
+    });
+  })
+
+
 });
 
 
