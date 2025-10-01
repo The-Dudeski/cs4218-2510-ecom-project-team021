@@ -10,8 +10,6 @@ import Register from './Register';
 jest.mock('axios');
 jest.mock('react-hot-toast');
 
-jest.mock("../../hooks/useCategory", () => jest.fn(() => [])); // Mock useCategory hook entirely
-
 jest.mock('../../context/auth', () => ({
     useAuth: jest.fn(() => [null, jest.fn()]) // Mock useAuth hook to return null state and a mock function for setAuth
   }));
@@ -96,4 +94,35 @@ describe('Register Component', () => {
     await waitFor(() => expect(axios.post).toHaveBeenCalled());
     expect(toast.error).toHaveBeenCalledWith('Something went wrong');
   });
+
+  it('should display backend error message when API returns success = false', async () => {
+  // Arrange
+  axios.post.mockResolvedValueOnce({
+    data: { success: false, message: 'Invalid input' }
+  });
+
+  const { getByText, getByPlaceholderText } = render(
+    <MemoryRouter initialEntries={['/register']}>
+      <Routes>
+        <Route path="/register" element={<Register />} />
+      </Routes>
+    </MemoryRouter>
+  );
+
+  fireEvent.change(getByPlaceholderText('Enter Your Name'), { target: { value: 'Jane Doe' } });
+  fireEvent.change(getByPlaceholderText('Enter Your Email'), { target: { value: 'jane@example.com' } });
+  fireEvent.change(getByPlaceholderText('Enter Your Password'), { target: { value: 'password123' } });
+  fireEvent.change(getByPlaceholderText('Enter Your Phone'), { target: { value: '9876543210' } });
+  fireEvent.change(getByPlaceholderText('Enter Your Address'), { target: { value: '456 Lane' } });
+  fireEvent.change(getByPlaceholderText('Enter Your DOB'), { target: { value: '1999-12-12' } });
+  fireEvent.change(getByPlaceholderText('What is Your Favorite sports'), { target: { value: 'Basketball' } });
+
+  // Act
+  fireEvent.click(getByText('REGISTER'));
+
+  // Assert
+  await waitFor(() => expect(axios.post).toHaveBeenCalled());
+  expect(toast.error).toHaveBeenCalledWith('Invalid input'); // 👈 this covers line 34
+});
+
 });
