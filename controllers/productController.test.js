@@ -296,3 +296,173 @@ describe("deleteProductController", () => {
     });
   });
 });
+
+
+describe("updateProductController", () => {
+    let updateProductController;
+    let mockUpdatedProduct;
+  
+    beforeAll(async () => {
+        ({ updateProductController } = await import("./productController.js"));
+    });
+    
+        beforeEach(async () => {  
+            jest.clearAllMocks();
+    
+        mockUpdatedProduct = {
+            photo: {},
+            save: jest.fn(),
+        };
+    
+        const productModelModule = await import("../models/productModel.js");
+        productModelModule.default.findByIdAndUpdate = jest
+            .fn()
+            .mockResolvedValue(mockUpdatedProduct);
+      });
+  
+    it("validates required fields", async () => {
+      const req = {
+        params: { pid: "123" },
+        fields: {
+          name: "", // missing name triggers validation
+          description: "desc",
+          price: 10,
+          category: "cat",
+          quantity: 5,
+          shipping: true,
+        },
+        files: {},
+      };
+      const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+  
+      await updateProductController(req, res);
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith({ error: "Name is Required" });
+    });
+  
+    it("validates photo size > 1MB", async () => {
+      const req = {
+        params: { pid: "123" },
+        fields: {
+          name: "Product",
+          description: "desc",
+          price: 10,
+          category: "cat",
+          quantity: 5,
+          shipping: true,
+        },
+        files: { photo: { size: 2000000 } },
+      };
+      const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+  
+      await updateProductController(req, res);
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith({
+        error: "photo is Required and should be less then 1mb",
+      });
+    });
+  
+    it("updates fields without photo", async () => {
+      const req = {
+        params: { pid: "123" },
+        fields: {
+          name: "Updated Product",
+          description: "Updated desc",
+          price: 50,
+          category: "updated-cat",
+          quantity: 10,
+          shipping: false,
+        },
+        files: {},
+      };
+      const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+  
+      await updateProductController(req, res);
+  
+      const productModelModule = await import("../models/productModel.js");
+      expect(productModelModule.default.findByIdAndUpdate).toHaveBeenCalledWith(
+        "123",
+        expect.objectContaining({
+          name: "Updated Product",
+          description: "Updated desc",
+          price: 50,
+          category: "updated-cat",
+          quantity: 10,
+          shipping: false,
+          slug: expect.any(String),
+        }),
+        { new: true }
+      );
+  
+      expect(mockUpdatedProduct.save).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          products: mockUpdatedProduct,
+        })
+      );
+    });
+  
+    it("updates fields and saves photo when provided", async () => {
+      const fsMock = await import("fs");
+  
+      const req = {
+        params: { pid: "123" },
+        fields: {
+          name: "Updated Product",
+          description: "desc",
+          price: 10,
+          category: "cat",
+          quantity: 5,
+          shipping: true,
+        },
+        files: { photo: { path: "/fake/photo", size: 500, type: "image/png" } },
+      };
+      const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+  
+      await updateProductController(req, res);
+  
+      expect(fsMock.readFileSync).toHaveBeenCalledWith("/fake/photo");
+      expect(mockUpdatedProduct.save).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          products: mockUpdatedProduct,
+        })
+      );
+    });
+  
+    it("handles errors gracefully", async () => {
+      const req = {
+        params: { pid: "123" },
+        fields: {
+          name: "Product",
+          description: "desc",
+          price: 10,
+          category: "cat",
+          quantity: 5,
+          shipping: true,
+        },
+        files: {},
+      };
+      const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+  
+      const productModelModule = await import("../models/productModel.js");
+      productModelModule.default.findByIdAndUpdate.mockRejectedValueOnce(
+        new Error("DB error")
+      );
+  
+      await updateProductController(req, res);
+  
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Error in Updte product",
+        })
+      );
+    });
+  });
+  
