@@ -1,4 +1,4 @@
-import { registerController, loginController } from "./authController.js"
+import { registerController, loginController, forgotPasswordController } from "./authController.js"
 import userModel from "../models/userModel.js";
 import { hashPassword, comparePassword } from "../helpers/authHelper.js";
 import JWT from "jsonwebtoken";
@@ -376,5 +376,160 @@ describe("loginController", () => {
     });
   });
 });
+
+describe("forgotPasswordController", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("missing email", async () => {
+    // Arrange
+    const req = {
+      body : {
+        answer: "Football",
+        newPassword: "newpassword"
+      }
+    }
+    const res = mockResponse();
+
+    // Act
+    await forgotPasswordController(req, res);
+
+    // Assert
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith({
+      message: "Email is required"
+    });
+  });
+
+  it("missing answer", async () => {
+    // Arrange
+    const req = {
+      body : {
+        email: "safwan@gmail.com",
+        newPassword: "newpassword"
+      }
+    }
+    const res = mockResponse();
+
+    // Act
+    await forgotPasswordController(req, res);
+
+    // Assert
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith({
+      message: "Answer is required"
+    });
+  });
+
+  it("missing new password", async () => {
+    // Arrange
+    const req = {
+      body : {
+        email: "safwan@gmail.com",
+        answer: "Football",
+      }
+    }
+    const res = mockResponse();
+
+    // Act
+    await forgotPasswordController(req, res);
+
+    // Assert
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith({
+      message: "New Password is required"
+    });
+  });
+
+  it("user not found", async () => {
+    // Arrange
+    const req = {
+      body : {
+        email: "missing@gmail.com",
+        answer: "Football",
+        newPassword: "newpassword"
+      }
+    }
+    const res = mockResponse();
+    userModel.findOne.mockResolvedValueOnce(null);
+
+    // Act
+    await forgotPasswordController(req, res);
+
+    // Assert
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.send).toHaveBeenCalledWith({
+      success: false,
+      message: "Wrong Email or Answer"
+    });
+  });
+
+  it("exception caught in catch block", async () => {
+    // Arrange
+    const req = {
+      body : {
+        email: "safwan@gmail.com",
+        answer: "Football",
+        newPassword: "newpassword"
+      }
+    }
+    const res = mockResponse();
+    const fakeErr = new Error("Fake Error");
+
+    userModel.findOne.mockRejectedValueOnce(fakeErr);
+    
+    // Act
+    await forgotPasswordController(req, res);
+
+    // Assert
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith({
+      success: false,
+      message: "Something went wrong",
+      error: fakeErr
+    });
+  });
+
+  
+  it("successful reset of password", async () => {
+    // Arrange
+    const req = {
+      body : {
+        email: "safwan@gmail.com",
+        answer: "Football",
+        newPassword: "newpassword"
+      }
+    }
+    const res = mockResponse();
+    const fakeUser = {
+      _id: "userid",
+      email: "safwan@gmail.com"
+    };
+
+    userModel.findOne.mockResolvedValueOnce(fakeUser);
+    hashPassword.mockResolvedValueOnce("newpasswordhash");
+    userModel.findByIdAndUpdate.mockResolvedValueOnce({}); // updating here
+
+    // Act
+    await forgotPasswordController(req, res);
+
+    // Assert
+    expect(hashPassword).toHaveBeenCalledWith("newpassword")
+    expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+      "userid",
+      {
+        password: "newpasswordhash"
+      }
+    )
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith({
+      success: true,
+      message: "Password Reset Successfully",
+    });
+  });
+});
+
+
 
 
