@@ -16,6 +16,16 @@ jest.mock("jsonwebtoken", () => ({
   sign: jest.fn(),
 }))
 
+beforeAll(() => {
+  jest.spyOn(console, "log").mockImplementation(() => {}); // silence console.log
+  jest.spyOn(console, "error").mockImplementation(() => {}); // silence console.error
+});
+
+afterAll(() => {
+  console.log.mockRestore();
+  console.error.mockRestore();
+});
+
 const mockResponse = () => {
   const res = {};
   res.status = jest.fn().mockReturnValue(res);
