@@ -7,7 +7,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import Layout from "./../components/Layout";
 import { AiOutlineReload } from "react-icons/ai";
-import "../styles/Homepages.css";
+import "../styles/HomepageStyles.css";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ const HomePage = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  //get all cat
+  //get all categories
   const getAllCategory = async () => {
     try {
       const { data } = await axios.get("/api/v1/category/get-category");
@@ -28,84 +28,121 @@ const HomePage = () => {
         setCategories(data?.category);
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching categories:", error);
     }
   };
 
-  useEffect(() => {
-    getAllCategory();
-    getTotal();
-  }, []);
-  //get products
+  // get total product count
+  const getTotal = async () => {
+    try {
+      const { data } = await axios.get("/api/v1/product/product-count");
+      if (data?.total >= 0) {
+        setTotal(data.total);
+      }
+    } catch (error) {
+      console.error("Error fetching total:", error);
+    }
+  };
+  
+  // get all products
   const getAllProducts = async () => {
     try {
       setLoading(true);
       const { data } = await axios.get(`/api/v1/product/product-list/${page}`);
-      setLoading(false);
-      setProducts(data.products);
+      if (Array.isArray(data?.products)) {
+        setProducts(data.products);
+      } else {
+        setProducts([]);
+      }
     } catch (error) {
+      console.error("Error fetching all products:", error);
+    } finally {
       setLoading(false);
-      console.log(error);
     }
   };
 
-  //getTOtal COunt
-  const getTotal = async () => {
-    try {
-      const { data } = await axios.get("/api/v1/product/product-count");
-      setTotal(data?.total);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    if (page === 1) return;
-    loadMore();
-  }, [page]);
-  //load more
+  // load more
   const loadMore = async () => {
     try {
       setLoading(true);
       const { data } = await axios.get(`/api/v1/product/product-list/${page}`);
-      setLoading(false);
-      setProducts([...products, ...data?.products]);
+      if (Array.isArray(data?.products)) {
+        setProducts((prev) => [...prev, ...data.products]);
+      }
     } catch (error) {
-      console.log(error);
+      console.error("Error loading more products:", error);
+    } finally {
       setLoading(false);
     }
   };
 
-  // filter by cat
+  // product category filter toggle
   const handleFilter = (value, id) => {
-    let all = [...checked];
-    if (value) {
-      all.push(id);
-    } else {
-      all = all.filter((c) => c !== id);
-    }
-    setChecked(all);
+    setChecked((prev) =>
+      value ? [...prev, id] : prev.filter((c) => c !== id)
+    );
   };
-  useEffect(() => {
-    if (!checked.length || !radio.length) getAllProducts();
-  }, [checked.length, radio.length]);
 
-  useEffect(() => {
-    if (checked.length || radio.length) filterProduct();
-  }, [checked, radio]);
-
-  //get filterd product
+  // get filterd product
   const filterProduct = async () => {
     try {
       const { data } = await axios.post("/api/v1/product/product-filters", {
         checked,
         radio,
       });
-      setProducts(data?.products);
+
+      if (Array.isArray(data?.products)) {
+        setProducts(data.products);
+      } else {
+        setProducts([]);
+      }
     } catch (error) {
-      console.log(error);
+      console.error("Error filtering products:", error);
     }
   };
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      await getAllCategory();
+      await getTotal();
+      await getAllProducts();
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // page increments, call loadMore()
+  useEffect(() => {
+    if (page === 1) return;
+    loadMore();
+  }, [page]);
+
+  // filters cleared, refetch using getAllProducts()
+  useEffect(() => {
+    if (!checked.length && !radio.length) {
+      getAllProducts();
+    }
+  }, [checked.length, radio.length]);
+
+  // filter product
+  useEffect(() => {
+    if (checked.length || radio.length) {
+      filterProduct();
+    }
+  }, [checked, radio]);
+
+  // reset filters with a refetch using getAllProducts()
+  const resetFilters = () => {
+    setChecked([]);
+    setRadio([]);
+    setPage(1);
+    getAllProducts();
+  };
+
+
+
   return (
     <Layout title={"ALL Products - Best offers "}>
       {/* banner image */}
@@ -120,15 +157,21 @@ const HomePage = () => {
         <div className="col-md-3 filters">
           <h4 className="text-center">Filter By Category</h4>
           <div className="d-flex flex-column">
-            {categories?.map((c) => (
-              <Checkbox
-                key={c._id}
-                onChange={(e) => handleFilter(e.target.checked, c._id)}
-              >
-                {c.name}
-              </Checkbox>
-            ))}
+            {categories.length > 0 ? (
+              categories?.map((c) => (
+                <Checkbox
+                  key={c._id}
+                  checked={checked.includes(c._id)}
+                  onChange={(e) => handleFilter(e.target.checked, c._id)}
+                >
+                  {c.name}
+                </Checkbox>
+              ))
+            ) : (
+              <p>No categories available</p>
+            )}
           </div>
+
           {/* price filter */}
           <h4 className="text-center mt-4">Filter By Price</h4>
           <div className="d-flex flex-column">
@@ -143,7 +186,7 @@ const HomePage = () => {
           <div className="d-flex flex-column">
             <button
               className="btn btn-danger"
-              onClick={() => window.location.reload()}
+              onClick={resetFilters}
             >
               RESET FILTERS
             </button>
@@ -182,11 +225,11 @@ const HomePage = () => {
                     <button
                       className="btn btn-dark ms-1"
                       onClick={() => {
-                        setCart([...cart, p]);
-                        localStorage.setItem(
-                          "cart",
-                          JSON.stringify([...cart, p])
-                        );
+                        setCart((prev) => {
+                          const updated = [...prev, p];
+                          localStorage.setItem("cart", JSON.stringify(updated));
+                          return updated;
+                        });
                         toast.success("Item Added to cart");
                       }}
                     >
