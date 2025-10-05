@@ -4,13 +4,14 @@ export default {
 
   // when testing backend
   testEnvironment: "node",
+  transform: {},
 
   // which test to run
-  testMatch: ["<rootDir>/controllers/productController.test.js"],
+  testMatch: ["<rootDir>/models/categoryModel.test.js"],
 
   // jest code coverage
   collectCoverage: true,
-  collectCoverageFrom: ["controllers/productController.js"],
+  collectCoverageFrom: ["models/categoryModel.test.js"],
   coverageThreshold: {
     global: {
       lines: 20,

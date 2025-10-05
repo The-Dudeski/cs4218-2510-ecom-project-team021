@@ -20,8 +20,13 @@ const ProductDetails = () => {
       const { data } = await axios.get(
         `/api/v1/product/get-product/${params.slug}`
       );
-      setProduct(data?.product);
-      getSimilarProduct(data?.product._id, data?.product.category._id);
+      if (data?.product) {
+      setProduct(data.product);
+
+        if (data.product._id && data.product.category?._id) {
+          getSimilarProduct(data.product._id, data.product.category._id);
+        }
+      }
     } catch (error) {
       console.log(error);
     }
@@ -62,7 +67,7 @@ const ProductDetails = () => {
             })}
           </h6>
           <h6>Category : {product?.category?.name}</h6>
-          <button class="btn btn-secondary ms-1">ADD TO CART</button>
+          <button className="btn btn-secondary ms-1">ADD TO CART</button>
         </div>
       </div>
       <hr />
