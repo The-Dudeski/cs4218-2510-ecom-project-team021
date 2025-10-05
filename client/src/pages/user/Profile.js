@@ -26,6 +26,13 @@ const Profile = () => {
   // form function
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // validate password length in frontend as well
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters long.");
+      return
+    }
+
     try {
       const { data } = await axios.put("/api/v1/auth/profile", {
         name,
@@ -34,7 +41,7 @@ const Profile = () => {
         phone,
         address,
       });
-      if (data?.errro) {
+      if (data?.error) {
         toast.error(data?.error);
       } else {
         setAuth({ ...auth, user: data?.updatedUser });
@@ -90,6 +97,7 @@ const Profile = () => {
                     className="form-control"
                     id="exampleInputPassword1"
                     placeholder="Enter Your Password"
+                    required
                   />
                 </div>
                 <div className="mb-3">
