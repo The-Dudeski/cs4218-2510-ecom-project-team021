@@ -1,23 +1,19 @@
-import { jest } from '@jest/globals';
-
+// Set up environment variable for JWT secret
 process.env.JWT_SECRET = 'testsecret';
 
-// ESM-compatible mocking (used ChatGPT to resolve the problem with ESM module)
-jest.unstable_mockModule('jsonwebtoken', () => ({
-  default: {
-    verify: jest.fn(),
-  },
+// Mock dependencies (CommonJS-compatible)
+jest.mock('jsonwebtoken', () => ({
+  verify: jest.fn(),
 }));
 
-jest.unstable_mockModule('../models/userModel.js', () => ({
-  default: {
-    findById: jest.fn(),
-  },
+jest.mock('../models/userModel.js', () => ({
+  findById: jest.fn(),
 }));
 
-const JWT = (await import('jsonwebtoken')).default;
-const userModel = (await import('../models/userModel.js')).default;
-const { requireSignIn, isAdmin } = await import('./authMiddleware.js');
+// Import mocked modules and middleware
+const JWT = require('jsonwebtoken');
+const userModel = require('../models/userModel.js');
+const { requireSignIn, isAdmin } = require('./authMiddleware.js');
 
 describe('Auth Middleware', () => {
   let req, res, next;
@@ -67,13 +63,15 @@ describe('Auth Middleware', () => {
   it('should log error if JWT.verify throws', async () => {
     const error = new Error('Token invalid');
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    JWT.verify.mockImplementation(() => { throw error });
-  
+    JWT.verify.mockImplementation(() => {
+      throw error;
+    });
+
     await requireSignIn(req, res, next);
-  
+
     expect(consoleSpy).toHaveBeenCalledWith(error);
     expect(next).not.toHaveBeenCalled();
-  
+
     consoleSpy.mockRestore();
   });
 
@@ -82,9 +80,9 @@ describe('Auth Middleware', () => {
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     req.user = { _id: '123' };
     userModel.findById.mockRejectedValue(error);
-  
+
     await isAdmin(req, res, next);
-  
+
     expect(consoleSpy).toHaveBeenCalledWith(error);
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.send).toHaveBeenCalledWith({
@@ -93,8 +91,8 @@ describe('Auth Middleware', () => {
       message: 'Error in admin middleware',
     });
     expect(next).not.toHaveBeenCalled();
-  
+
     consoleSpy.mockRestore();
   });
-  
 });
+
