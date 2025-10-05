@@ -242,10 +242,6 @@ describe("UI Rendering", () => {
     const pendingCells = await screen.findAllByText("Pending");
     expect(pendingCells.length).toBeGreaterThan(0);
   });
-
-  
-
-
 });
 
 
