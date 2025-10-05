@@ -14,32 +14,37 @@ const CreateCategory = () => {
   //handle Form
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!name || name.trim() === "") {
+      toast.error("Category name is required");
+      return;
+    }
     try {
-      const { data } = await axios.post("/api/v1/category/create-category", {
-        name,
-      });
+      const response = await axios.post("/api/v1/category/create-category", { name });
+      const data = response?.data;
       if (data?.success) {
         toast.success(`${name} is created`);
         getAllCategory();
+        setName("");
       } else {
         toast.error(data.message);
       }
     } catch (error) {
-      console.log(error);
-      toast.error("somthing went wrong in input form");
+      console.log("CreateCategory;handleSubmit error:", error.message);
+      toast.error("Something went wrong in input form");
     }
   };
 
   //get all cat
   const getAllCategory = async () => {
     try {
-      const { data } = await axios.get("/api/v1/category/get-category");
-      if (data.success) {
+      const response = await axios.get("/api/v1/category/get-category");
+      const data = response?.data;
+      if (data?.success) {
         setCategories(data.category);
       }
     } catch (error) {
-      console.log(error);
-      toast.error("Something wwent wrong in getting catgeory");
+      console.log("CreateCategory;getAllCategory error:", error.message);
+      toast.error("Something went wrong in getting category");
     }
   };
 
@@ -51,11 +56,12 @@ const CreateCategory = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.put(
+      const response = await axios.put(
         `/api/v1/category/update-category/${selected._id}`,
         { name: updatedName }
       );
-      if (data.success) {
+      const data = response?.data;
+      if (data?.success) {
         toast.success(`${updatedName} is updated`);
         setSelected(null);
         setUpdatedName("");
@@ -65,16 +71,15 @@ const CreateCategory = () => {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error("Somtihing went wrong");
+      toast.error("Something went wrong");
     }
   };
   //delete category
   const handleDelete = async (pId) => {
     try {
-      const { data } = await axios.delete(
-        `/api/v1/category/delete-category/${pId}`
-      );
-      if (data.success) {
+      const response = await axios.delete(`/api/v1/category/delete-category/${pId}`);
+      const data = response?.data;
+      if (data?.success) {
         toast.success(`category is deleted`);
 
         getAllCategory();
@@ -82,7 +87,7 @@ const CreateCategory = () => {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error("Somtihing went wrong");
+      toast.error("Something went wrong");
     }
   };
   return (
@@ -99,6 +104,7 @@ const CreateCategory = () => {
                 handleSubmit={handleSubmit}
                 value={name}
                 setValue={setName}
+                testId="create-category-input"
               />
             </div>
             <div className="w-75">
@@ -111,9 +117,8 @@ const CreateCategory = () => {
                 </thead>
                 <tbody>
                   {categories?.map((c) => (
-                    <>
-                      <tr>
-                        <td key={c._id}>{c.name}</td>
+                      <tr key={c._id}>
+                        <td>{c.name}</td>
                         <td>
                           <button
                             className="btn btn-primary ms-2"
@@ -126,16 +131,14 @@ const CreateCategory = () => {
                             Edit
                           </button>
                           <button
+                            data-testid={`delete-btn-${c._id}`}
                             className="btn btn-danger ms-2"
-                            onClick={() => {
-                              handleDelete(c._id);
-                            }}
+                            onClick={() => handleDelete(c._id)}
                           >
                             Delete
                           </button>
                         </td>
                       </tr>
-                    </>
                   ))}
                 </tbody>
               </table>
@@ -143,12 +146,13 @@ const CreateCategory = () => {
             <Modal
               onCancel={() => setVisible(false)}
               footer={null}
-              visible={visible}
+              open={visible}
             >
               <CategoryForm
                 value={updatedName}
                 setValue={setUpdatedName}
                 handleSubmit={handleUpdate}
+                testId="update-category-input"
               />
             </Modal>
           </div>
