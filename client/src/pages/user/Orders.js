@@ -33,7 +33,7 @@ const Orders = () => {
             <h1 className="text-center">All Orders</h1>
             {orders?.map((o, i) => {
               return (
-                <div className="border shadow">
+                <div className="border shadow" key={o._id || i}>
                   <table className="table">
                     <thead>
                       <tr>
@@ -50,7 +50,7 @@ const Orders = () => {
                         <td>{i + 1}</td>
                         <td>{o?.status}</td>
                         <td>{o?.buyer?.name}</td>
-                        <td>{moment(o?.createdAt).fromNow()}</td>
+                        <td>{o?.createdAt ? moment(o.createdAt).fromNow() : "N/A"}</td>
                         <td>{o?.payment.success ? "Success" : "Pending"}</td>
                         <td>{o?.products?.length || 0}</td>
                       </tr>
@@ -70,7 +70,7 @@ const Orders = () => {
                         </div>
                         <div className="col-md-8">
                           <p>{p.name}</p>
-                          <p>{p.description.substring(0, 30)}</p>
+                          <p>{p.description ? p.description.substring(0, 30) : ""}</p>
                           <p>Price : {p.price}</p>
                         </div>
                       </div>
