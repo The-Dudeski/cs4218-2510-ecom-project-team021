@@ -1,8 +1,7 @@
-import { jest } from "@jest/globals";
-
 const mockConnect = jest.fn();
-jest.unstable_mockModule("mongoose", () => ({
-  default: { connect: mockConnect },
+
+jest.mock("mongoose", () => ({
+  connect: mockConnect,
 }));
 
 String.prototype.bgMagenta = function () {
@@ -16,7 +15,7 @@ String.prototype.white = function () {
 };
 
 // Import connectDB after mocking
-const { default: connectDB } = await import("./db.js");
+const connectDB = require("./db.js");
 
 describe("connectDB", () => {
   let consoleSpy;

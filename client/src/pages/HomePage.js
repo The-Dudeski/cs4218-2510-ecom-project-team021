@@ -20,13 +20,11 @@ const HomePage = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  //get all categories
+  // get all categories
   const getAllCategory = async () => {
     try {
       const { data } = await axios.get("/api/v1/category/get-category");
-      if (data?.success) {
-        setCategories(data?.category);
-      }
+      if (data?.success) setCategories(data.category);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
@@ -36,15 +34,15 @@ const HomePage = () => {
   const getTotal = async () => {
     try {
       const { data } = await axios.get("/api/v1/product/product-count");
-      if (data?.total >= 0) {
+      if (typeof data?.total === "number" && data.total >= 0) {
         setTotal(data.total);
       }
     } catch (error) {
       console.error("Error fetching total:", error);
     }
   };
-  
-  // get all products
+
+  // get products for a page
   const getAllProducts = async () => {
     try {
       setLoading(true);
@@ -61,7 +59,7 @@ const HomePage = () => {
     }
   };
 
-  // load more
+  // load more products (pagination)
   const loadMore = async () => {
     try {
       setLoading(true);
@@ -76,21 +74,18 @@ const HomePage = () => {
     }
   };
 
-  // product category filter toggle
+  // category filter toggle
   const handleFilter = (value, id) => {
-    setChecked((prev) =>
-      value ? [...prev, id] : prev.filter((c) => c !== id)
-    );
+    setChecked((prev) => (value ? [...prev, id] : prev.filter((c) => c !== id)));
   };
 
-  // get filterd product
+  // get filtered products
   const filterProduct = async () => {
     try {
       const { data } = await axios.post("/api/v1/product/product-filters", {
         checked,
         radio,
       });
-
       if (Array.isArray(data?.products)) {
         setProducts(data.products);
       } else {
@@ -101,39 +96,61 @@ const HomePage = () => {
     }
   };
 
+  // initial fetch (fixed to prevent act() warnings)
   useEffect(() => {
     let isMounted = true;
-    (async () => {
-      await getAllCategory();
-      await getTotal();
-      await getAllProducts();
-    })();
+
+    const loadInitialData = async () => {
+      try {
+        setLoading(true);
+        const [catRes, totalRes, prodRes] = await Promise.all([
+          axios.get("/api/v1/category/get-category"),
+          axios.get("/api/v1/product/product-count"),
+          axios.get(`/api/v1/product/product-list/${page}`),
+        ]);
+
+        if (!isMounted) return;
+
+        if (catRes?.data?.success) setCategories(catRes.data.category);
+        if (typeof totalRes?.data?.total === "number")
+          setTotal(totalRes.data.total);
+        if (Array.isArray(prodRes?.data?.products))
+          setProducts(prodRes.data.products);
+      } catch (error) {
+        console.error("Error fetching initial data:", error);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadInitialData();
+
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [page]);
 
-  // page increments, call loadMore()
+  // page increment (pagination)
   useEffect(() => {
     if (page === 1) return;
     loadMore();
   }, [page]);
 
-  // filters cleared, refetch using getAllProducts()
+  // refetch all products when filters cleared
   useEffect(() => {
     if (!checked.length && !radio.length) {
       getAllProducts();
     }
   }, [checked.length, radio.length]);
 
-  // filter product
+  // filter products when filters applied
   useEffect(() => {
     if (checked.length || radio.length) {
       filterProduct();
     }
   }, [checked, radio]);
 
-  // reset filters with a refetch using getAllProducts()
+  // reset filters
   const resetFilters = () => {
     setChecked([]);
     setRadio([]);
@@ -141,10 +158,8 @@ const HomePage = () => {
     getAllProducts();
   };
 
-
-
   return (
-    <Layout title={"ALL Products - Best offers "}>
+    <Layout title={"ALL Products - Best offers"}>
       {/* banner image */}
       <img
         src="/images/Virtual.png"
@@ -152,13 +167,14 @@ const HomePage = () => {
         alt="bannerimage"
         width={"100%"}
       />
-      {/* banner image */}
+
       <div className="container-fluid row mt-3 home-page">
+        {/* filters */}
         <div className="col-md-3 filters">
           <h4 className="text-center">Filter By Category</h4>
           <div className="d-flex flex-column">
             {categories.length > 0 ? (
-              categories?.map((c) => (
+              categories.map((c) => (
                 <Checkbox
                   key={c._id}
                   checked={checked.includes(c._id)}
@@ -176,26 +192,26 @@ const HomePage = () => {
           <h4 className="text-center mt-4">Filter By Price</h4>
           <div className="d-flex flex-column">
             <Radio.Group onChange={(e) => setRadio(e.target.value)}>
-              {Prices?.map((p) => (
+              {Prices.map((p) => (
                 <div key={p._id}>
                   <Radio value={p.array}>{p.name}</Radio>
                 </div>
               ))}
             </Radio.Group>
           </div>
+
           <div className="d-flex flex-column">
-            <button
-              className="btn btn-danger"
-              onClick={resetFilters}
-            >
+            <button className="btn btn-danger" onClick={resetFilters}>
               RESET FILTERS
             </button>
           </div>
         </div>
-        <div className="col-md-9 ">
+
+        {/* product section */}
+        <div className="col-md-9">
           <h1 className="text-center">All Products</h1>
           <div className="d-flex flex-wrap">
-            {products?.map((p) => (
+            {products.map((p) => (
               <div className="card m-2" key={p._id}>
                 <img
                   src={`/api/v1/product/product-photo/${p._id}`}
@@ -227,7 +243,10 @@ const HomePage = () => {
                       onClick={() => {
                         setCart((prev) => {
                           const updated = [...prev, p];
-                          localStorage.setItem("cart", JSON.stringify(updated));
+                          localStorage.setItem(
+                            "cart",
+                            JSON.stringify(updated)
+                          );
                           return updated;
                         });
                         toast.success("Item Added to cart");
@@ -240,23 +259,18 @@ const HomePage = () => {
               </div>
             ))}
           </div>
+
+          {/* load more */}
           <div className="m-2 p-3">
             {products && products.length < total && (
               <button
                 className="btn loadmore"
                 onClick={(e) => {
                   e.preventDefault();
-                  setPage(page + 1);
+                  setPage((prev) => prev + 1);
                 }}
               >
-                {loading ? (
-                  "Loading ..."
-                ) : (
-                  <>
-                    {" "}
-                    Loadmore <AiOutlineReload />
-                  </>
-                )}
+                {loading ? "Loading ..." : <>Loadmore <AiOutlineReload /></>}
               </button>
             )}
           </div>
