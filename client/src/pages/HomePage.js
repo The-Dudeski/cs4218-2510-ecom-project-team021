@@ -24,7 +24,11 @@ const HomePage = () => {
   const getAllCategory = async () => {
     try {
       const { data } = await axios.get("/api/v1/category/get-category");
-      if (data?.success) setCategories(data.category);
+      if (data?.success) {
+        setCategories(data.category);
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
@@ -35,10 +39,12 @@ const HomePage = () => {
     try {
       const { data } = await axios.get("/api/v1/product/product-count");
       if (typeof data?.total === "number" && data.total >= 0) {
+       
         setTotal(data.total);
       }
     } catch (error) {
       console.error("Error fetching total:", error);
+      toast.error("Something went wrong. Please try again.");
     }
   };
 
@@ -54,6 +60,7 @@ const HomePage = () => {
       }
     } catch (error) {
       console.error("Error fetching all products:", error);
+      toast.error("Failed to load products. Please refresh the page.");
     } finally {
       setLoading(false);
     }
@@ -69,6 +76,7 @@ const HomePage = () => {
       }
     } catch (error) {
       console.error("Error loading more products:", error);
+      toast.error("Could not load more products.");
     } finally {
       setLoading(false);
     }
@@ -93,46 +101,30 @@ const HomePage = () => {
       }
     } catch (error) {
       console.error("Error filtering products:", error);
+      toast.error("Failed to apply filters.");
     }
   };
 
   // initial fetch (fixed to prevent act() warnings)
   useEffect(() => {
-    let isMounted = true;
-
     const loadInitialData = async () => {
       try {
         setLoading(true);
-        const [catRes, totalRes, prodRes] = await Promise.all([
-          axios.get("/api/v1/category/get-category"),
-          axios.get("/api/v1/product/product-count"),
-          axios.get(`/api/v1/product/product-list/${page}`),
-        ]);
-
-        if (!isMounted) return;
-
-        if (catRes?.data?.success) setCategories(catRes.data.category);
-        if (typeof totalRes?.data?.total === "number")
-          setTotal(totalRes.data.total);
-        if (Array.isArray(prodRes?.data?.products))
-          setProducts(prodRes.data.products);
+        await Promise.all([getAllCategory(), getTotal()]);
+        await getAllProducts();
       } catch (error) {
-        console.error("Error fetching initial data:", error);
+        toast.error("Something went wrong. Please try again.");
       } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
     };
 
     loadInitialData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [page]);
+  }, []);
 
   // page increment (pagination)
   useEffect(() => {
-    if (page === 1) return;
+    if (page > 1) return;
     loadMore();
   }, [page]);
 
@@ -264,13 +256,12 @@ const HomePage = () => {
           <div className="m-2 p-3">
             {products && products.length < total && (
               <button
+                data-testid="load-more-btn"
                 className="btn loadmore"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setPage((prev) => prev + 1);
-                }}
+                onClick={() => setPage((prev) => prev + 1)}
+                disabled={loading}
               >
-                {loading ? "Loading ..." : <>Loadmore <AiOutlineReload /></>}
+                {loading ? "Loading ..." : "Load More"}
               </button>
             )}
           </div>
