@@ -1,17 +1,23 @@
-import { jest } from "@jest/globals";
-import {
+const {
   createCategoryController,
   updateCategoryController,
   categoryControlller,
   singleCategoryController,
   deleteCategoryCOntroller,
-} from "../controllers/categoryController.js";
-import categoryModel from "../models/categoryModel.js";
+} = require("../controllers/categoryController.js");
 
-jest.mock("../models/categoryModel.js", () => jest.fn());
-jest.mock("slugify", () => jest.fn(() => "test-slug"));
+const categoryModel = require("../models/categoryModel.js");
+const slugify = require("slugify");
 
-const { default: slugify } = await import("slugify");
+jest.mock("../models/categoryModel.js", () => {
+  const mockCategoryModel = jest.fn();
+  mockCategoryModel.findOne = jest.fn();
+  mockCategoryModel.find = jest.fn();
+  mockCategoryModel.findByIdAndUpdate = jest.fn();
+  mockCategoryModel.findByIdAndDelete = jest.fn();
+  return mockCategoryModel;
+});
+jest.mock("slugify");
 
 const mockResponse = () => {
   const res = {};
@@ -19,14 +25,14 @@ const mockResponse = () => {
   res.send = jest.fn().mockReturnValue(res);
   return res;
 };
+
 beforeAll(() => {
-		jest.spyOn(console, "log").mockImplementation(() => {});
+  jest.spyOn(console, "log").mockImplementation(() => {});
 });
 
 afterAll(() => {
   console.log.mockRestore();
 });
-
 
 describe("Category Controller Tests", () => {
   beforeEach(() => {
@@ -35,7 +41,34 @@ describe("Category Controller Tests", () => {
     categoryModel.findByIdAndUpdate = jest.fn();
     categoryModel.findByIdAndDelete = jest.fn();
     categoryModel.find = jest.fn();
-	});
+  });
+
+  it("should create category successfully when valid name is provided", async () => {
+    const req = { body: { name: "NewCategory" } };
+    const res = mockResponse();
+
+    const mockSavedCategory = {
+      _id: "cat123",
+      name: "NewCategory",
+      slug: "newcategory",
+    };
+
+    categoryModel.findOne.mockResolvedValueOnce(null);
+    slugify.mockReturnValue("newcategory");
+
+    // ✅ mock instance method of mongoose model
+    categoryModel.prototype.save = jest.fn().mockResolvedValue(mockSavedCategory);
+
+    await createCategoryController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.send).toHaveBeenCalledWith({
+      success: true,
+      message: "new category created",
+      category: mockSavedCategory,
+    });
+  });
+
 
   it("should fail to create category when name is missing", async () => {
     const req = { body: {} };

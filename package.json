@@ -49,6 +49,5 @@
     "jest-environment-jsdom": "^29.7.0",
     "mongodb-memory-server": "^10.2.2",
     "sonarqube-scanner": "^3.3.0"
-  },
-  "type": "module"
+  }
 }
