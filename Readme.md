@@ -51,7 +51,7 @@ Safwan
 4. orderStatusController
 - pages/user/Profile.js
 - pages/admin/Users.js
-- models/orderModel.js
+- pages/HomePage.js
 
 Rena
 - components/AdminMenu.js
@@ -68,7 +68,7 @@ Rena
 - controllers/categoryController.js
 1. categoryControlller
 2. singleCategoryController
-- models/categoryModel.js
+- models/orderModel.js
 
 Leyli
 - pages/admin/AdminOrders.js
