@@ -1,5 +1,92 @@
 # CS4218 Project - Virtual Vault
 
+## 0. Work Distribution
+
+Joanna
+- context/auth.js
+- helpers/authHelper.js
+- middlewares/authMiddleware.js
+- controllers/productController.js
+1. createProductController
+2. deleteProductController
+3. updateProductController
+- pages/Contact.js
+- pages/Policy.js
+- config/db.js
+- context/cart.js
+- pages/CartPage.js
+- controllers/productController.js
+1. braintreeTokenController
+2. brainTreePaymentController
+
+Lorenz
+- controllers/categoryController.js
+1. createCategoryController
+2. updateCategoryController
+3. deleteCategoryController
+- models/userModel.js
+- components/Routes/Private.js
+- components/UserMenu.js
+- pages/user/Dashboard.js
+- components/Footer.js
+- components/Header.js
+- components/Layout.js
+- components/Spinner.js
+- pages/About.js
+- pages/Pagenotfound.js
+
+Safwan
+- pages/Auth/Register.js
+- pages/Auth/Login.js
+- controllers/authController.js
+1. registerController
+2. loginController
+3. forgotPasswordController
+4. testController
+- pages/user/Orders.js
+- controllers/authController.js
+1. updateProfileController
+2. getOrdersController
+3. getAllOrdersController
+4. orderStatusController
+- pages/user/Profile.js
+- pages/admin/Users.js
+- pages/HomePage.js
+
+Rena
+- components/AdminMenu.js
+- pages/admin/AdminDashboard.js
+- components/Form/CategoryForm.js
+- pages/admin/CreateCategory.js
+- pages/admin/CreateProduct.js
+- pages/admin/UpdateProduct.js
+- components/Form/SearchInput.js
+- context/search.js
+- pages/Search.js
+- pages/ProductDetails.js
+- pages/CategoryProduct.js
+- controllers/categoryController.js
+1. categoryControlller
+2. singleCategoryController
+- models/orderModel.js
+
+Leyli
+- pages/admin/AdminOrders.js
+- pages/admin/Products.js
+- controllers/productController.js
+1. getProductController
+2. getSingleProductController
+3. productPhotoController
+4. productFiltersController
+5. productCountController
+6. productListController
+7. searchProductController
+8. realtedProductController
+9. productCategoryController
+- models/productModel.js
+- hooks/useCategory.js
+- pages/Categories.js
+
 ## 1. Project Introduction
 
 Virtual Vault is a full-stack MERN (MongoDB, Express.js, React.js, Node.js) e-commerce website, offering seamless connectivity and user-friendly features. The platform provides a robust framework for online shopping. The website is designed to adapt to evolving business needs and can be efficiently extended.

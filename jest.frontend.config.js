@@ -25,17 +25,7 @@ export default {
   // jest code coverage
   collectCoverage: true,
   collectCoverageFrom: [
-    // Only include tested pages to target 100% page coverage
-    'client/src/pages/About.js',
-    'client/src/pages/CartPage.js',
-    'client/src/pages/Contact.js',
-    'client/src/pages/Policy.js',
-    'client/src/pages/Pagenotfound.js',
-    'client/src/pages/Categories.js',
-    'client/src/pages/CategoryProduct.js',
-    'client/src/pages/ProductDetails.js',
-    'client/src/pages/Search.js',
-    // Exclude generated content
+    'client/src/**/*.{js,jsx}',
     '!client/src/_site/**',
   ],
   coveragePathIgnorePatterns: [

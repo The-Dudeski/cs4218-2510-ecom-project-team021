@@ -6,11 +6,33 @@ export default {
   testEnvironment: "node",
 
   // which test to run
-  testMatch: ["<rootDir>/controllers/productController.test.js"],
+  testMatch: ["<rootDir>/**/*.test.js"],
+  
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "<rootDir>/frontend/",
+    "<rootDir>/client/",
+    "<rootDir>/src/"
+  ],
+
 
   // jest code coverage
   collectCoverage: true,
-  collectCoverageFrom: ["controllers/productController.js"],
+  collectCoverageFrom: [
+    "controllers/**/*.js",
+    "models/**/*.js",
+    "middlewares/**/*.js",
+    "helpers/**/*.js",
+    "!**/node_modules/**",
+    "!**/config/**",
+    "!**/coverage/**",
+    "!**/playwright-report/**",
+    "!**/server.js",
+    "!**/jest.*.js",
+    "!**/frontend/**",
+    "!**/client/**",
+    "!**/src/**"
+  ],
   coverageThreshold: {
     global: {
       lines: 20,
