@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Products matches snapshot 1`] = `
+<div>
+  <div>
+    <div
+      class="row"
+    >
+      <div
+        class="col-md-3"
+      >
+        <div>
+          AdminMenu
+        </div>
+      </div>
+      <div
+        class="col-md-9 "
+      >
+        <h1
+          class="text-center"
+        >
+          All Products List
+        </h1>
+        <div
+          class="d-flex"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
