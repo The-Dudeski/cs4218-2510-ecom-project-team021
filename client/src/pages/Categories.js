@@ -7,7 +7,7 @@ const Categories = () => {
   return (
     <Layout title={"All Categories"}>
       <div className="container">
-        <div className="row">
+        <div className="row" data-testid="category-grid">
           {categories.map((c) => (
             <div className="col-md-6 mt-5 mb-3 gx-3 gy-3" key={c._id}>
               <Link to={`/category/${c.slug}`} className="btn btn-primary">
