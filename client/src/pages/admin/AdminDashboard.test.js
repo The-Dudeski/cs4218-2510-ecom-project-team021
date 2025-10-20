@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import AdminDashboard from "./AdminDashboard";
 import { act } from "react"; 
 import { useAuth } from "../../context/auth";
@@ -60,4 +60,57 @@ describe("AdminDashboard", () => {
   	expect(screen.queryByText(/Admin Contact/i)).not.toBeInTheDocument();
 
 	});
+});
+
+describe("Integration Tests — AdminDashboard", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("renders the full admin dashboard flow with user info and subcomponents", async () => {
+    // Mock user returned by useAuth
+    useAuth.mockReturnValue([
+      { user: { name: "rena", email: "rena@test.com", phone: "12345678" } },
+    ]);
+
+    render(<AdminDashboard />);
+
+    expect(screen.getByTestId("layout")).toBeInTheDocument();
+    expect(screen.getByTestId("admin-menu")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText("Admin Name : rena")).toBeInTheDocument();
+      expect(screen.getByText("Admin Email : rena@test.com")).toBeInTheDocument();
+      expect(screen.getByText("Admin Contact : 12345678")).toBeInTheDocument();
+    });
+  });
+
+  it("handles the fallback scenario when no user info is provided", async () => {
+    useAuth.mockReturnValue([{ user: null }]); 
+
+    render(<AdminDashboard />);
+
+    expect(screen.getByTestId("layout")).toBeInTheDocument();
+    expect(screen.getByTestId("admin-menu")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText("Admin information not found")).toBeInTheDocument();
+      expect(screen.queryByText(/Admin Name/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Admin Email/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Admin Contact/i)).not.toBeInTheDocument();
+    });
+  });
+
+  it("gracefully re-renders if useAuth returns undefined (edge case)", async () => {
+    useAuth.mockReturnValue([undefined]); 
+
+    render(<AdminDashboard />);
+
+    expect(screen.getByTestId("layout")).toBeInTheDocument();
+    expect(screen.getByTestId("admin-menu")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText("Admin information not found")).toBeInTheDocument();
+    });
+  });
 });
