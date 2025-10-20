@@ -25,7 +25,7 @@ afterAll(() => {
   console.log.mockRestore();
 });
 
-describe("CreateCategory Page", () => {
+describe("Unit tests for CreateCategory Page", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -267,6 +267,66 @@ describe("CreateCategory Page", () => {
       expect(toast.success).toHaveBeenCalledWith("Updated is updated");
       expect(screen.getByText("Updated")).toBeInTheDocument();
       expect(screen.getByText("Shirts")).toBeInTheDocument();
+    });
+  });
+});
+
+describe("Integration Tests for CreateCategory", () => {
+  afterEach(() => jest.clearAllMocks());
+
+  it("submits new category through CategoryForm and updates table", async () => {
+    axios.post.mockResolvedValueOnce({ data: { success: true } });
+    axios.get
+      .mockResolvedValueOnce({ data: { success: true, category: [] } })
+      .mockResolvedValueOnce({ data: { success: true, category: [{ _id: "1", name: "TestCategory" }] } });
+
+    render(<CreateCategory />);
+
+    const input = screen.getByTestId("create-category-input");
+    fireEvent.change(input, { target: { value: "TestCategory" } });
+    fireEvent.click(screen.getByText(/Submit/i));
+
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith("TestCategory is created");
+      expect(screen.getByText("TestCategory")).toBeInTheDocument();
+    });
+  });
+
+  it(" updates category and reflects change", async () => {
+    const category = { _id: "1", name: "Old" };
+    axios.get
+      .mockResolvedValueOnce({ data: { success: true, category: [category] } })
+      .mockResolvedValueOnce({ data: { success: true, category: [{ _id: "1", name: "Updated" }] } });
+    axios.put.mockResolvedValueOnce({ data: { success: true } });
+
+    render(<CreateCategory />);
+
+    fireEvent.click(await screen.findByText("Edit"));
+    const modalInput = screen.getByTestId("update-category-input");
+    fireEvent.change(modalInput, { target: { value: "Updated" } });
+    fireEvent.click(screen.getByTestId("update-submit"));
+
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith("Updated is updated");
+      expect(screen.getByText("Updated")).toBeInTheDocument();
+    });
+  });
+
+  it("deletes a category and refreshes list ", async () => {
+    const category = { _id: "1", name: "ToDelete" };
+    axios.get
+      .mockResolvedValueOnce({ data: { success: true, category: [category] } })
+      .mockResolvedValueOnce({ data: { success: true, category: [] } });
+    axios.delete.mockResolvedValueOnce({ data: { success: true } });
+
+    render(<CreateCategory />);
+
+    const deleteButton = await screen.findByTestId("delete-btn-1");
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith("category is deleted");
+      expect(screen.queryByText("ToDelete")).not.toBeInTheDocument();
     });
   });
 });
