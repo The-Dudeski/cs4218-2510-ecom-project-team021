@@ -7,7 +7,7 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('Profile Page UI Validation', () => {
-  // Go directly to the profile page (frontend only)
+  // Basic login, since it is a UI test
   test.beforeEach(async ({ page }) => {
     // Start at homepage
     await page.goto('http://localhost:3000/');
@@ -15,7 +15,7 @@ test.describe('Profile Page UI Validation', () => {
     // Go to login
     await page.getByRole('link', { name: /login/i }).click();
 
-    // Fill login form (UI interaction only)
+    // Fill login form 
     await page.getByRole('textbox', { name: /enter your email/i }).fill('safwanuser@gmail.com');
     await page.getByRole('textbox', { name: /enter your password/i }).fill('safwanuser');
     await page.getByRole('button', { name: /login/i }).click();
