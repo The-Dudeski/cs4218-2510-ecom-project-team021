@@ -55,11 +55,19 @@ export const updateCategoryController = async (req, res) => {
       category,
     });
   } catch (error) {
-    console.error(error);
+    // 🧩 Catch duplicate key (E11000)
+    if (error.code === 11000) {
+      return res.status(409).send({
+        success: false,
+        message: "Category already exists",
+      });
+    }
+
+    console.error("Update category error:", error);
     res.status(500).send({
       success: false,
+      message: "Error updating category",
       error,
-      message: "Error while updating category",
     });
   }
 };

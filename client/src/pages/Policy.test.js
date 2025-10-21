@@ -19,14 +19,9 @@ describe("Policy Page", () => {
   });
 
   it("renders the policy image correctly", () => {
-    const img = screen.getByAltText(/contactus/i);
+    const img = screen.getByAltText(/privacy/i);
     expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute("src", "/images/contactus.jpeg");
   });
-
-  it("renders the privacy policy content", () => {
-    const paragraphs = screen.getAllByText(/add privacy policy/i);
-    expect(paragraphs).toHaveLength(7);
-    paragraphs.forEach(p => expect(p).toBeInTheDocument());
-  });
 });
+

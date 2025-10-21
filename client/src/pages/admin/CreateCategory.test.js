@@ -175,7 +175,7 @@ describe("Unit tests for CreateCategory Page", () => {
     fireEvent.click(screen.getByTestId("update-submit"));
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("Something went wrong");
+      expect(toast.error).toHaveBeenCalledWith("Something went wrong while updating category");
     });
   });
 
