@@ -3,8 +3,8 @@ import { test, expect } from '@playwright/test';
 // ------------------------------------------
 // Configuration: UPDATE THESE CREDENTIALS
 // ------------------------------------------
-const USER_EMAIL = 'l.d@gmail.com'; 
-const USER_PASSWORD = '123';   
+const USER_EMAIL = 'safwan@gmail.com'; 
+const USER_PASSWORD = 'safwan';   
 const USER_ADDRESS = '123 Test Street, QA City, 90210';
 // ------------------------------------------
 
