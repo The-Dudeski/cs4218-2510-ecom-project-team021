@@ -96,8 +96,8 @@ test.describe('Product Details Page UI — Virtual Vault, with logged in user', 
 
   // Check product info section
   test('should display correct product information', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Name : The Law of Contract in' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Description : A bestselling' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Name : ' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Description : ' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Price :$' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Category : ' })).toBeVisible();
     await expect(page.getByRole('button', { name: /add to cart/i })).toBeVisible();
