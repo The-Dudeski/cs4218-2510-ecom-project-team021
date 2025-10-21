@@ -67,6 +67,9 @@ export default defineConfig({
         ...devices['Desktop Firefox'],
       },
     },
+    
+
+    
 
     /* Test against mobile viewports. */
     // {
@@ -96,6 +99,11 @@ export default defineConfig({
     //   },
     // },
   ],
+  webServer: {
+    command: 'npm run dev', // or "npm start" depending on your setup
+    port: 3000,
+    reuseExistingServer: true, // so it won't restart if already running
+  },
 
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
   // outputDir: 'test-results/',
