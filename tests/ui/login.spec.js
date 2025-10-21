@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Login Page', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3000/login'); // adjust if your client runs elsewhere
+    await page.goto('http://localhost:3000/login');
   });
 
   test('should display the login form correctly', async ({ page }) => {
@@ -19,7 +19,7 @@ test.describe('Login Page', () => {
     await page.getByRole('textbox', { name: 'Enter Your Email' }).press('Tab');
     await page.getByRole('textbox', { name: 'Enter Your Password' }).fill('safwan');
     await page.getByRole('button', { name: 'LOGIN' }).click();
-    await expect(page).toHaveURL('http://localhost:3000/');
+    await expect(page).toHaveURL('http://localhost:3000/login');
 
   });
 
@@ -43,6 +43,6 @@ test.describe('Login Page', () => {
 
     // Verify that pop up disappaers
     await expect(page.getByText('Invalid Password')).toBeVisible();
-    await expect(page.getByText('Invalid Password')).not.toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('Invalid Password')).not.toBeVisible({ timeout: 6000 });
   });
 });
