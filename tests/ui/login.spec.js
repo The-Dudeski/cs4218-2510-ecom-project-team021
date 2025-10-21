@@ -43,6 +43,6 @@ test.describe('Login Page', () => {
 
     // Verify that pop up disappaers
     await expect(page.getByText('Invalid Password')).toBeVisible();
-    await expect(page.getByText('Invalid Password')).not.toBeVisible({ timeout: 6000 });
+    await expect(page.getByText('Invalid Password')).not.toBeVisible({ timeout: 5000 });
   });
 });
