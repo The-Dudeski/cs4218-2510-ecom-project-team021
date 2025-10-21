@@ -96,7 +96,7 @@ const singleCategoryController = async (req, res) => {
 };
 
 //delete category
-const deleteCategoryCOntroller = async (req, res) => {
+const deleteCategoryController = async (req, res) => {
   try {
     const { id } = req.params;
     await categoryModel.findByIdAndDelete(id);
@@ -119,5 +119,5 @@ module.exports = {
   updateCategoryController,
   categoryControlller,
   singleCategoryController,
-  deleteCategoryCOntroller,
+  deleteCategoryController,
 };
