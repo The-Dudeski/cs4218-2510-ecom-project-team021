@@ -28,8 +28,13 @@ const Register = () => {
         answer,
       });
       if (res && res.data.success) {
+        // ✅ Keep same toast message
         toast.success("Register Successfully, please login");
-        navigate("/login");
+
+        // ✅ Add redirect after short delay
+        setTimeout(() => {
+          navigate("/login");
+        }, 1500);
       } else {
         toast.error(res.data.message);
       }
