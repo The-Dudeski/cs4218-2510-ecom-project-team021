@@ -37,9 +37,19 @@ const CreateProduct = () => {
     getAllCategory();
   }, []);
 
-  //create product function
   const handleCreate = async (e) => {
     e.preventDefault();
+
+    if (price < 0) {
+      toast.error("Invalid value for price");
+      return;
+    }
+
+    if (quantity < 0) {
+      toast.error("Invalid value for quantity");
+      return;
+    }
+
     try {
       const productData = new FormData();
       productData.append("name", name);
@@ -48,6 +58,8 @@ const CreateProduct = () => {
       productData.append("quantity", quantity);
       productData.append("photo", photo);
       productData.append("category", category);
+      productData.append("shipping", shipping);
+
       const { data } = await axios.post(
         "/api/v1/product/create-product",
         productData
@@ -57,13 +69,18 @@ const CreateProduct = () => {
         toast.success("Product Created Successfully");
         navigate("/dashboard/admin/products");
       } else {
-        toast.error(data?.message || "Failed to create product");
+        toast.error(data?.error || data?.message || "Failed to create product");
       }
     } catch (error) {
-      console.log("CreateProduct;handleCreate error:", error.message);
-      toast.error("Something went wrong while creating product");
+      console.log("CreateProduct;handleCreate error:", error);
+      if (error.response && error.response.data) {
+        toast.error(error.response.data.error || error.response.data.message);
+      } else {
+        toast.error("Something went wrong while creating product");
+      }
     }
   };
+
 
   return (
     <Layout title={"Dashboard - Create Product"}>

@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 const categorySchema = new mongoose.Schema({
   name: {
     type: String,
-    // required: true,
-    // unique: true,
+    required: true,
+    unique: true,
   },
   slug: {
     type: String,
@@ -12,4 +12,5 @@ const categorySchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model("Category", categorySchema);
+const categoryModel = mongoose.model("Category", categorySchema);
+export default categoryModel;

@@ -2,6 +2,7 @@ import userModel from "../models/userModel.js";
 
 import { comparePassword, hashPassword } from "./../helpers/authHelper.js";
 import JWT from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 export const registerController = async (req, res) => {
   try {
@@ -163,81 +164,143 @@ export const testController = (req, res) => {
   }
 };
 
-//update profile
+// update profile
+
 export const updateProfileController = async (req, res) => {
   try {
-
-    // ensure that the user is authenticated first
+    // Ensure user is authenticated
     if (!req?.user?._id) {
-      return res.status(401).send({
-        success: false, 
-        message: "Unauthorised user"
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorised user",
       });
     }
 
-    const { 
-      name, 
-      email, 
-      password, 
-      address, 
-      phone 
+    // Extract fields
+    const {
+      name,
+      email,
+      oldPassword,
+      newPassword,
+      confirmPassword,
+      address,
+      phone,
     } = req.body || {};
-    
-    // get current user
+
+    // Find user
     const user = await userModel.findById(req.user._id);
-    
-    // missing user 
     if (!user) {
-      return res.status(404).send({
-        success: false, 
-        message: "User not found"
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
       });
     }
 
-    // password does not exist
-    if (!password) {
+    // Must provide old password for any update
+    if (!oldPassword) {
       return res.status(400).json({
-        success: false, 
-        message: "A new password is required." 
+        success: false,
+        message: "Current password is required to update your profile.",
       });
     }
 
-    // password too short
-    if (password.length < 6) {
+    // Verify old password correctness
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
       return res.status(400).json({
-        success: false, 
-        message: "Password must be 6 characters long." 
+        success: false,
+        message: "Incorrect current password.",
       });
     }
 
+    // Validate fields
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Name is required.",
+      });
+    }
+
+    // Phone validation
+    const phoneRegex = /^[0-9]{8,15}$/;
+    if (phone && !phoneRegex.test(phone)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phone number format.",
+      });
+    }
+
+    // Handle password change (if requested)
+    if (newPassword || confirmPassword) {
+      if (!newPassword || !confirmPassword) {
+        return res.status(400).json({
+          success: false,
+          message: "Please fill in all password fields.",
+        });
+      }
+
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({
+          success: false,
+          message: "New password and confirmation do not match.",
+        });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({
+          success: false,
+          message: "New password must be at least 6 characters long.",
+        });
+      }
+
+      // Prevent reusing the old password
+      const isSame = await bcrypt.compare(newPassword, user.password);
+      if (isSame) {
+        return res.status(400).json({
+          success: false,
+          message: "New password cannot be the same as the old password.",
+        });
+      }
+    }
+
+    // Build update object
     const updates = {};
-    if (name != null) updates.name = name;
-    if (phone != null) updates.phone = phone;
-    if (address != null) updates.address = address;
+    if (name && name.trim()) updates.name = name.trim();
+    if (phone) updates.phone = phone;
+    if (address) updates.address = address.trim();
+    if (newPassword) updates.password = await hashPassword(newPassword);
 
-    // hash and include password
-    updates.password = await hashPassword(password);
+    // Detect if anything actually changed
+    const changed = Object.keys(updates).some(
+      (key) => user[key]?.toString() !== updates[key]?.toString()
+    );
+    if (!changed) {
+      return res.status(400).json({
+        success: false,
+        message: "No changes detected.",
+      });
+    }
 
-    // apply given updates
+    // Apply updates
     const updatedUser = await userModel.findByIdAndUpdate(
       req.user._id,
       { $set: updates },
       { new: true }
     );
 
-    const { password: _pw, ...publicUser } = updatedUser.toObject?.() ?? updatedUser;
+    const { password, ...publicUser } =
+      updatedUser.toObject?.() ?? updatedUser;
 
-    res.status(200).send({
+    res.status(200).json({
       success: true,
-      message : "Profile updated successfully",
+      message: "Profile updated successfully.",
       updatedUser: publicUser,
     });
-
   } catch (error) {
-    console.log(error);
-    res.status(500).send({
+    console.error(error);
+    res.status(500).json({
       success: false,
-      message: "Error while updating profile",
+      message: "Error while updating profile.",
       error,
     });
   }

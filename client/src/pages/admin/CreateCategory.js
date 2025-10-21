@@ -14,6 +14,7 @@ const CreateCategory = () => {
   //handle Form
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (!name || name.trim() === "") {
       toast.error("Category name is required");
       return;
@@ -26,7 +27,11 @@ const CreateCategory = () => {
         getAllCategory();
         setName("");
       } else {
-        toast.error(data.message);
+        if (data?.message?.toLowerCase().includes("exists")) {
+          toast.error("Category already exists");
+        } else {
+          toast.error(data?.message || "Something went wrong");
+        }
       }
     } catch (error) {
       console.log("CreateCategory;handleSubmit error:", error.message);
@@ -55,6 +60,17 @@ const CreateCategory = () => {
   //update category
   const handleUpdate = async (e) => {
     e.preventDefault();
+
+    if (updatedName.trim() === selected.name.trim()) {
+      setVisible(false);
+      toast.dismiss(); // clear any active toast just in case
+      return;
+    }
+
+    if (!updatedName || updatedName.trim() === "") {
+      toast.error("Category name is required");
+      return;
+    }
     try {
       const response = await axios.put(
         `/api/v1/category/update-category/${selected._id}`,
@@ -68,10 +84,19 @@ const CreateCategory = () => {
         setVisible(false);
         getAllCategory();
       } else {
-        toast.error(data.message);
+        if (data?.message?.toLowerCase().includes("exists")) {
+          toast.error("Category already exists");
+        } else {
+          toast.error(data?.message || "Something went wrong");
+        }
       }
     } catch (error) {
-      toast.error("Something went wrong");
+      console.log("CreateCategory handleUpdate error:", error.message);
+      if (error.response?.status === 409) {
+        toast.error("Category already exists");
+      } else {
+        toast.error("Something went wrong while updating category");
+      }
     }
   };
   //delete category
