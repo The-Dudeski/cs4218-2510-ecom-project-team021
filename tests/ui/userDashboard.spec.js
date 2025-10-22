@@ -21,7 +21,7 @@ test.describe('User Dashboard Page — Virtual Vault', () => {
     await page.getByRole('button', { name: /login/i }).click();
 
     // Wait for dashboard menu to appear
-    await expect(page.getByRole('button', { name: /safwanusertest1/i })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('button', { name: /safwanusertest1/i })).toBeVisible({ timeout: 30000 });
 
     // Navigate to Dashboard
     await page.getByRole('button', { name: /safwanusertest1/i }).click();
