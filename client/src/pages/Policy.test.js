@@ -1,6 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import Policy from "./Policy";
+import "@testing-library/jest-dom";
 
 jest.mock("./../components/Layout", () => ({ children, title }) => (
   <div data-testid="mock-layout">

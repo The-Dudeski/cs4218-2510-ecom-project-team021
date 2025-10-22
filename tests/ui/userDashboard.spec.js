@@ -20,6 +20,9 @@ test.describe('User Dashboard Page — Virtual Vault', () => {
     await page.getByRole('textbox', { name: /enter your password/i }).fill('safwanuser');
     await page.getByRole('button', { name: /login/i }).click();
 
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
+
     // Wait for dashboard menu to appear
     await expect(page.getByRole('button', { name: /safwanusertest1/i })).toBeVisible({ timeout: 30000 });
 
