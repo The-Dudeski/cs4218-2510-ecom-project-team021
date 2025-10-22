@@ -231,6 +231,7 @@ describe("createProductController", () => {
     };
 
     jest.clearAllMocks();
+    productModel.findOne = jest.fn().mockResolvedValue(null);
   });
 
   it("validates required fields", async () => {
@@ -367,6 +368,19 @@ describe("createProductController", () => {
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({ error: "Quantity is Required" });
   });
+
+  it("returns 409 if product already exists", async () => {
+    productModel.findOne = jest.fn().mockResolvedValue({ _id: "existing123" });
+  
+    await createProductController(req, res);
+  
+    expect(res.status).toHaveBeenCalledWith(409);
+    expect(res.send).toHaveBeenCalledWith({
+      success: false,
+      message: "Product already exists in this category",
+    });
+  });
+  
 });
 
 // deleteProductController
