@@ -1,8 +1,8 @@
 # CS4218 Project - Virtual Vault
 
-## 0. Work Distribution
+## Work Distribution Milestone 1
 
-Joanna
+Joanna Jung
 - context/auth.js
 - helpers/authHelper.js
 - middlewares/authMiddleware.js
@@ -19,7 +19,7 @@ Joanna
 1. braintreeTokenController
 2. brainTreePaymentController
 
-Lorenz
+Lorenz Dude
 - controllers/categoryController.js
 1. createCategoryController
 2. updateCategoryController
@@ -35,7 +35,7 @@ Lorenz
 - pages/About.js
 - pages/Pagenotfound.js
 
-Safwan
+Safwan Hussein
 - pages/Auth/Register.js
 - pages/Auth/Login.js
 - controllers/authController.js
@@ -53,7 +53,7 @@ Safwan
 - pages/admin/Users.js
 - pages/HomePage.js
 
-Rena
+Rena Chia
 - components/AdminMenu.js
 - pages/admin/AdminDashboard.js
 - components/Form/CategoryForm.js
@@ -70,7 +70,7 @@ Rena
 2. singleCategoryController
 - models/orderModel.js
 
-Leyli
+Leyli Jalilova
 - pages/admin/AdminOrders.js
 - pages/admin/Products.js
 - controllers/productController.js
@@ -86,6 +86,35 @@ Leyli
 - models/productModel.js
 - hooks/useCategory.js
 - pages/Categories.js
+
+## Work Distribution Milestone 2
+Safwan Hussein
+- Set up config files for jest frontend and backend tests
+- Set up sonarqube, generated coverage report and filled up report portion for submission
+- Edited and set up sonar-project.properties
+- categoryModel bug fixes
+- controller related bug fixes, such as in categoryController
+- UI tests for login page
+- UI tests for product details page
+- UI tests for user profile page
+- UI tests for user dashboard page
+- Integration tests for register page
+- Integration tests for orders page
+- Integration tests for home page
+- Code changes in updateProfileController in authController.js for better security and validation
+- Code changes to user profile page to align with backend changes in updateProfileController
+- Created and seeded shared database for group's use for UI tests
+
+Rena Chia
+- 
+
+Lorenz Dude
+- 
+
+Leyli Jalilova
+- 
+
+Joanna Jung
 
 ## 1. Run URL
 
