@@ -38,9 +38,11 @@ window.matchMedia = window.matchMedia || function() {
       removeListener: function() {}
     };
   };
+
+  jest.useFakeTimers();
       
 
-describe('Register Component', () => {
+describe('Register Component - Unit tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -126,3 +128,105 @@ describe('Register Component', () => {
 });
 
 });
+
+const mockNavigate = jest.fn();
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useNavigate: () => mockNavigate,
+}));
+
+describe("Register Component — Integration Tests", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test ("should register successfully and navigate to /login", async () => {
+    // Mock successful API response
+    axios.post.mockResolvedValueOnce({
+      data: { success: true },
+    });
+
+    const { getByText, getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={["/register"]}>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<div>Login Page</div>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    // Fill out form
+    fireEvent.change(getByPlaceholderText("Enter Your Name"), { target: { value: "John Doe" } });
+    fireEvent.change(getByPlaceholderText("Enter Your Email"), { target: { value: "john@example.com" } });
+    fireEvent.change(getByPlaceholderText("Enter Your Password"), { target: { value: "password123" } });
+    fireEvent.change(getByPlaceholderText("Enter Your Phone"), { target: { value: "1234567890" } });
+    fireEvent.change(getByPlaceholderText("Enter Your Address"), { target: { value: "123 Street" } });
+    fireEvent.change(getByPlaceholderText("Enter Your DOB"), { target: { value: "2000-01-01" } });
+    fireEvent.change(getByPlaceholderText("What is Your Favorite sports"), { target: { value: "Football" } });
+
+    fireEvent.click(getByText("REGISTER"));
+
+    await waitFor(() => expect(axios.post).toHaveBeenCalled());
+
+    jest.runAllTimers();
+
+    expect(toast.success).toHaveBeenCalledWith("Register Successfully, please login");
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith("/login"));
+  });
+
+  it("should display toast error when backend rejects registration", async () => {
+    axios.post.mockRejectedValueOnce(new Error("Network Error"));
+
+    const { getByText, getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={["/register"]}>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(getByPlaceholderText("Enter Your Name"), { target: { value: "Alice" } });
+    fireEvent.change(getByPlaceholderText("Enter Your Email"), { target: { value: "alice@example.com" } });
+    fireEvent.change(getByPlaceholderText("Enter Your Password"), { target: { value: "password" } });
+    fireEvent.change(getByPlaceholderText("Enter Your Phone"), { target: { value: "9999999999" } });
+    fireEvent.change(getByPlaceholderText("Enter Your Address"), { target: { value: "1 Lane" } });
+    fireEvent.change(getByPlaceholderText("Enter Your DOB"), { target: { value: "1999-09-09" } });
+    fireEvent.change(getByPlaceholderText("What is Your Favorite sports"), { target: { value: "Tennis" } });
+
+    fireEvent.click(getByText("REGISTER"));
+
+    await waitFor(() => expect(axios.post).toHaveBeenCalled());
+    expect(toast.error).toHaveBeenCalledWith("Something went wrong");
+
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it("should display backend message when user already exists", async () => {
+    axios.post.mockResolvedValueOnce({
+      data: { success: false, message: "User already exists" },
+    });
+
+    const { getByText, getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={["/register"]}>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(getByPlaceholderText("Enter Your Name"), { target: { value: "John" } });
+    fireEvent.change(getByPlaceholderText("Enter Your Email"), { target: { value: "test@example.com" } });
+    fireEvent.change(getByPlaceholderText("Enter Your Password"), { target: { value: "password123" } });
+    fireEvent.change(getByPlaceholderText("Enter Your Phone"), { target: { value: "1234567890" } });
+    fireEvent.change(getByPlaceholderText("Enter Your Address"), { target: { value: "123 Street" } });
+    fireEvent.change(getByPlaceholderText("Enter Your DOB"), { target: { value: "2000-01-01" } });
+    fireEvent.change(getByPlaceholderText("What is Your Favorite sports"), { target: { value: "Football" } });
+
+    fireEvent.click(getByText("REGISTER"));
+
+    await waitFor(() => expect(axios.post).toHaveBeenCalled());
+    expect(toast.error).toHaveBeenCalledWith("User already exists");
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+});
+
