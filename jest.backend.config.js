@@ -15,9 +15,14 @@ export default {
     "<rootDir>/src/"
   ],
 
+  testTimeout: 30000,
+
+  collectCoverage: true,
+  coverageDirectory: "<rootDir>/coverage", // ensure all backend coverage goes here
+  coverageReporters: ["text", "lcov"],
+
 
   // jest code coverage
-  collectCoverage: true,
   collectCoverageFrom: [
     "controllers/**/*.js",
     "models/**/*.js",
