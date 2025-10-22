@@ -106,7 +106,20 @@ Safwan Hussein
 - Created and seeded shared database for group's use for UI tests
 
 Rena Chia
-- 
+- UI tests for Register.js
+- UI tests for Policy.js
+- UI tests for CreateProduct.js
+- UI tests for CreateCategory.js
+- Edited CreateProduct.js
+- Edited CreateCategory.js
+- Edited Register.js
+- Integration test for CreateProduct.js
+- Integration test for CreateCategory.js
+- Integration test for UpdateProduct.js
+- Integration test for AdminMenu.js
+- Integration test for AdminDashboard.js
+- Setup SonarQube
+- SonarQube report write up
 
 Lorenz Dude
 - 
