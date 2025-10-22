@@ -1,42 +1,50 @@
 export default {
-  // name displayed during tests
+  // --- Display name ---
   displayName: "frontend",
 
-  // simulates browser environment in jest
-  // e.g., using document.querySelector in your tests
-  testEnvironment: "jest-environment-jsdom",
+  // --- Browser-like environment for React tests ---
+  testEnvironment: "jsdom",
 
-  // jest does not recognise jsx files by default, so we use babel to transform any jsx files
+  // --- Use Babel to transform JS/JSX ---
   transform: {
-    "^.+\\.jsx?$": "babel-jest",
+    "^.+\\.[jt]sx?$": "babel-jest",
   },
 
-  // tells jest how to handle css/scss imports in your tests
+  // --- Handle CSS imports in tests ---
   moduleNameMapper: {
     "\\.(css|scss)$": "identity-obj-proxy",
   },
 
-  // ignore all node_modules except styleMock (needed for css imports)
-  transformIgnorePatterns: ["/node_modules/(?!(styleMock\\.js)$)"],
-
-  // discover all frontend tests under client/src
+  // --- Discover frontend tests only ---
   testMatch: ["<rootDir>/client/src/**/*.test.js"],
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "<rootDir>/coverage/",
+    "<rootDir>/playwright-report/",
+  ],
 
-  // jest code coverage
+  // --- Coverage configuration ---
   collectCoverage: true,
+  coverageDirectory: "<rootDir>/client/coverage", // ✅ where SonarQube expects
+  coverageReporters: ["text", "lcov"], // ✅ lcov needed for Sonar
   collectCoverageFrom: [
-    'client/src/**/*.{js,jsx}',
-    '!client/src/_site/**',
+    "client/src/**/*.{js,jsx}",
+    "!client/src/**/__tests__/**",
+    "!client/src/**/*.test.js",
+    "!client/src/_site/**",
+    "!client/src/setupTests.js",
+    "!client/src/index.js",
   ],
-  coveragePathIgnorePatterns: [
-    '/node_modules/',
-    '<rootDir>/client/src/_site/',
-  ],
+
+  // --- Coverage thresholds (optional) ---
   coverageThreshold: {
     global: {
       lines: 90,
       functions: 90,
     },
   },
+
+  // --- Setup (for React Testing Library / jest-dom) ---
   setupFilesAfterEnv: ["<rootDir>/client/src/setupTests.js"],
 };
+
