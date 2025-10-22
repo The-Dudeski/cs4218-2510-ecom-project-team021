@@ -216,7 +216,6 @@ describe("UI Rendering", () => {
   });
 
   it("renders 'Pending' when payment is not successful", async () => {
-    // Arrange
     useAuth.mockReturnValue([{ token: "mock-token" }, jest.fn()]);
     axios.get.mockResolvedValueOnce({
       data: {
@@ -235,12 +234,141 @@ describe("UI Rendering", () => {
       },
     });
 
-    // Act
     render(React.createElement(Orders));
 
-    // Assert
     const pendingCells = await screen.findAllByText("Pending");
     expect(pendingCells.length).toBeGreaterThan(0);
+  });
+});
+
+describe("Integration Tests — Orders Page", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("fetches and displays orders when token exists", async () => {
+    const mockOrders = [
+      {
+        _id: "o1",
+        status: "Delivered",
+        buyer: { name: "Safwan Hussein" },
+        createdAt: new Date().toISOString(),
+        payment: { success: true },
+        products: [
+          { _id: "p1", name: "Laptop", description: "Gaming laptop", price: 1500 },
+        ],
+      },
+    ];
+
+    useAuth.mockReturnValue([{ token: "mock-token" }, jest.fn()]);
+    axios.get.mockResolvedValueOnce({ data: { orders: mockOrders } });
+
+    render(<Orders />);
+
+    await waitFor(() => {
+      expect(axios.get).toHaveBeenCalledWith("/api/v1/auth/orders");
+    });
+
+    expect(await screen.findByText(/All Orders/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Delivered/i)).toBeInTheDocument();
+    expect(screen.getByText(/Safwan Hussein/i)).toBeInTheDocument();
+    expect(screen.getByText(/Success/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Laptop$/i)).toBeInTheDocument(); 
+  });
+  
+  it("renders 'Pending' for failed payments", async () => {
+    const mockOrders = [
+      {
+        _id: "o2",
+        status: "Processing",
+        buyer: { name: "Chris Lee" },
+        createdAt: new Date().toISOString(),
+        payment: { success: false },
+        products: [{ _id: "p2", name: "Mouse", description: "Wireless", price: 50 }],
+      },
+    ];
+
+    useAuth.mockReturnValue([{ token: "mock-token" }, jest.fn()]);
+    axios.get.mockResolvedValueOnce({ data: { orders: mockOrders } });
+
+    render(<Orders />);
+
+    expect(await screen.findByText("Processing")).toBeInTheDocument();
+    expect(screen.getByText("Pending")).toBeInTheDocument();
+    expect(screen.getByText("Mouse")).toBeInTheDocument();
+    expect(screen.getByText("Price : 50")).toBeInTheDocument();
+  });
+
+  it("renders 'N/A' if createdAt is missing", async () => {
+    const mockOrders = [
+      {
+        _id: "o3",
+        status: "Processing",
+        buyer: { name: "Safwan Hussein" },
+        createdAt: null,
+        payment: { success: true },
+        products: [{ _id: "p3", name: "Headphones", description: "Noise-cancelling", price: 250 }],
+      },
+    ];
+
+    useAuth.mockReturnValue([{ token: "mock-token" }, jest.fn()]);
+    axios.get.mockResolvedValueOnce({ data: { orders: mockOrders } });
+
+    render(<Orders />);
+
+    expect(await screen.findByText("N/A")).toBeInTheDocument();
+    expect(screen.getByText("Headphones")).toBeInTheDocument();
+  });
+
+  it("handles missing description safely", async () => {
+    const mockOrders = [
+      {
+        _id: "o4",
+        status: "Delivered",
+        buyer: { name: "Alex" },
+        createdAt: new Date().toISOString(),
+        payment: { success: true },
+        products: [
+          { _id: "p4", name: "Monitor", description: null, price: 300 },
+        ],
+      },
+    ];
+
+    useAuth.mockReturnValue([{ token: "mock-token" }, jest.fn()]);
+    axios.get.mockResolvedValueOnce({ data: { orders: mockOrders } });
+
+    render(<Orders />);
+
+    expect(await screen.findByText("Monitor")).toBeInTheDocument();
+    expect(screen.getByText("Price : 300")).toBeInTheDocument();
+  });
+
+  it("handles API error gracefully", async () => {
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    useAuth.mockReturnValue([{ token: "mock-token" }, jest.fn()]);
+    axios.get.mockRejectedValueOnce(new Error("Network error"));
+
+    render(<Orders />);
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith("Error fetching orders", expect.any(Error));
+    });
+
+    consoleSpy.mockRestore();
+  });
+  
+  it("renders empty state when API returns no orders", async () => {
+    useAuth.mockReturnValue([{ token: "mock-token" }, jest.fn()]);
+    axios.get.mockResolvedValueOnce({ data: { orders: [] } });
+
+    const { container } = render(<Orders />);
+
+    await waitFor(() => {
+      expect(screen.getByText("All Orders")).toBeInTheDocument();
+    });
+
+    const rows = container.querySelectorAll("table tbody tr");
+    expect(rows.length).toBe(0);
   });
 });
 
