@@ -128,6 +128,13 @@ Leyli Jalilova
 - 
 
 Joanna Jung
+- UI Tests for Products.js
+- UI Tests for About.js
+- UI Tests for Search.js
+- Integration tests for Contact.js
+- Integration tests for Policy.js
+- Integration tests for db.js
+- Integration tests for productController.js
 
 ## 1. Run URL
 

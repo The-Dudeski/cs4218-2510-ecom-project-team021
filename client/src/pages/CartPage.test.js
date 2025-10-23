@@ -4,7 +4,9 @@ import { MemoryRouter } from "react-router-dom";
 import axios from "axios";
 import CartPage from "./CartPage";
 import { act } from "react-dom/test-utils";
+import "@testing-library/jest-dom";
 
+// Unit Tests
 jest.mock("axios");
 
 const renderWithRouter = (ui) => render(<MemoryRouter>{ui}</MemoryRouter>);
@@ -293,12 +295,6 @@ describe("CartPage address buttons", () => {
       fireEvent.click(updateBtn);
   
       expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/profile");
-    });
-      
+    });   
   });
-  
-  
-
-  
-
 });
