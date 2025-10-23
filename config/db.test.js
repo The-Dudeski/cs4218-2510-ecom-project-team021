@@ -1,3 +1,4 @@
+// Unit tests
 const mockConnect = jest.fn();
 
 jest.mock("mongoose", () => ({
